@@ -51,7 +51,26 @@ func (sm *ShootMessage) Validate() error {
 	return nil
 }
 
+// WinnerMessage - winner event message.
+type WinnerMessage struct {
+	Message string `json:"message"`
+}
+
+// GetMessageType - returns WinnerMessageType.
+func (wm *WinnerMessage) GetMessageType() MessageType {
+	return WinnerMessageType
+}
+
+// Validate - validates message type.
+func (wm *WinnerMessage) Validate() error {
+	if !wm.GetMessageType().IsValid() {
+		return errors.New("Message type is not valid")
+	}
+	return nil
+}
+
 var (
 	_ QueueMessage = &PrepareGunsMessage{}
 	_ QueueMessage = &ShootMessage{}
+	_ QueueMessage = &WinnerMessage{}
 )

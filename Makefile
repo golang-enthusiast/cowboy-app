@@ -1,3 +1,6 @@
+run:
+	./start.sh
+
 unittest:
 	# Runs all unit-tests.
 	AWS_REGION=us-east-1 bash -c 'go test $$(go list ./... | grep -v '/cmd') -v'

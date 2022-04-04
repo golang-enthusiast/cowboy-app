@@ -63,35 +63,45 @@ func (s *service) GetRandomTarget() (*domain.Cowboy, error) {
 }
 
 func (s *service) PrepareGunsAndShoot(ctx context.Context) error {
-	// Select random target.
-	target, err := s.GetRandomTarget()
-	if err != nil {
-		return err
-	}
 
 	// Get current cowboy.
-	foundCowboy, err := s.repository.FindByName(s.cowboyName)
+	currCowboy, err := s.repository.FindByName(s.cowboyName)
 	if err != nil {
 		return err
 	}
-	if foundCowboy == nil {
+	if currCowboy == nil {
 		return errors.NewErrNotFound(
 			fmt.Sprintf("Cowboy not found by name: %s", s.cowboyName),
 		)
 	}
+	// Dead cowboys don't shoot.
+	if currCowboy.Health <= 0 {
+		return nil
+	}
 
-	// Shoot.
-	_, err = s.queueService.SendMessage(ctx, target.Name, &domain.ShootMessage{
-		ShooterName: foundCowboy.Name,
-		Damage:      foundCowboy.Damage,
-	})
-	return err
+	// Select random target.
+	target, _ := s.GetRandomTarget()
+	// If there is no target, we will assume that we won
+	if target == nil {
+		_, err = s.queueService.SendMessage(ctx, s.cowboyName, &domain.WinnerMessage{
+			Message: "Woohoo ... I won!!!",
+		})
+		return err
+	} else {
+		// Shoot.
+		_, err = s.queueService.SendMessage(ctx, target.Name, &domain.ShootMessage{
+			ShooterName: currCowboy.Name,
+			Damage:      currCowboy.Damage,
+		})
+		return err
+	}
 }
 
-func (s *service) CommitShooting(shooterName string, damage int32) error {
+func (s *service) CommitShooting(shooterName string, damage int32) (int32, error) {
+
 	// Cowboys don’t shoot themselves.
 	if strings.EqualFold(shooterName, s.cowboyName) {
-		return errors.NewErrInvalidArgument(
+		return 0, errors.NewErrInvalidArgument(
 			"Cowboys don’t shoot themselves",
 		)
 	}
@@ -99,27 +109,28 @@ func (s *service) CommitShooting(shooterName string, damage int32) error {
 	// Get target cowboy.
 	targetCowboy, err := s.repository.FindByName(s.cowboyName)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if targetCowboy == nil {
-		return errors.NewErrNotFound(
+		return 0, errors.NewErrNotFound(
 			fmt.Sprintf("Cowboy not found by name: %s", s.cowboyName),
 		)
 	}
 
 	// Cowboys don’t shoot dead cowboys.
 	if targetCowboy.Health == 0 {
-		return errors.NewErrInvalidArgument(
+		return 0, errors.NewErrInvalidArgument(
 			"Cowboys don’t shoot dead cowboys.",
 		)
 	}
 
 	// Calculate health points.
-	var remainedHealth int32 = 0
-	if targetCowboy.Health >= damage {
-		remainedHealth = targetCowboy.Health - damage
-	}
+	var remainedHealth int32 = targetCowboy.Health - damage
 
 	// Update health points.
-	return s.repository.UpdateHealthPoints(targetCowboy.Name, remainedHealth)
+	err = s.repository.UpdateHealthPoints(targetCowboy.Name, remainedHealth)
+	if err != nil {
+		return 0, err
+	}
+	return remainedHealth, nil
 }

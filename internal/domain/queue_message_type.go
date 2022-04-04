@@ -28,6 +28,7 @@ func (mt MessageType) IsEmpty() bool {
 const (
 	PrepareGunsMessageType = MessageType("PREPARE_GUNS")
 	ShootMessageType       = MessageType("SHOOT")
+	WinnerMessageType      = MessageType("WINNER")
 )
 
 // List of valid message types.
@@ -35,5 +36,6 @@ var (
 	validMessageTypes = map[MessageType]bool{
 		PrepareGunsMessageType: true,
 		ShootMessageType:       true,
+		WinnerMessageType:      true,
 	}
 )

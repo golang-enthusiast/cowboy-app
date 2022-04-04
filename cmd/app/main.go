@@ -93,6 +93,13 @@ func main() {
 				return err
 			}
 			return cowboyWorker.HandleShootMessage(ctx, payload)
+		case pkgDomain.WinnerMessageType:
+			payload := &pkgDomain.WinnerMessage{}
+			err := json.Unmarshal([]byte(*msg.Body), payload)
+			if err != nil {
+				return err
+			}
+			return cowboyWorker.HandleWinnerMessage(ctx, payload)
 		default:
 			return errors.NewErrNotFound(fmt.Sprintf("Unsupported message type %v", messageType))
 		}

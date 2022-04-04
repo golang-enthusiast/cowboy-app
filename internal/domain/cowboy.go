@@ -40,7 +40,7 @@ type CowboyService interface {
 	PrepareGunsAndShoot(ctx context.Context) error
 
 	// CommitShooting - commit's cowboy shooting.
-	CommitShooting(shooterName string, damage int32) error
+	CommitShooting(shooterName string, damage int32) (int32, error)
 }
 
 // CowboyRandomGenerator - random number generator.

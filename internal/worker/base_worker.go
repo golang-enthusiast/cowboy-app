@@ -96,14 +96,9 @@ func (worker *Worker) run(ctx context.Context, h domain.QueueHandler, messages [
 			// Hadle message
 			//
 			err := worker.handleMessage(ctx, m, h)
-
-			// Write logs
-			//
-			_ = worker.Logger.Log("method", "HandleMessage",
-				"message", m.String(),
-				"messageID", m.MessageId,
-				"err", err,
-			)
+			if err != nil {
+				_ = worker.Logger.Log("Failed to handle message", "err", err)
+			}
 		}(messages[i])
 	}
 

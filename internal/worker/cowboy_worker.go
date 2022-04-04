@@ -42,5 +42,14 @@ func (w *CowboyWorker) HandleShootMessage(
 	ctx context.Context,
 	msg *domain.ShootMessage,
 ) error {
-	return w.cowboyService.CommitShooting(msg.ShooterName, msg.Damage)
+	_, err := w.cowboyService.CommitShooting(msg.ShooterName, msg.Damage)
+	return err
+}
+
+// HandleWinnerMessage - handle message.
+func (w *CowboyWorker) HandleWinnerMessage(
+	ctx context.Context,
+	msg *domain.WinnerMessage,
+) error {
+	return w.Logger.Log(msg.Message)
 }

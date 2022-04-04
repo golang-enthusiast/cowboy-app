@@ -38,11 +38,12 @@ func (mw loggingMiddleware) PrepareGunsAndShoot(ctx context.Context) (err error)
 	return mw.next.PrepareGunsAndShoot(ctx)
 }
 
-func (mw loggingMiddleware) CommitShooting(shooterName string, damage int32) (err error) {
+func (mw loggingMiddleware) CommitShooting(shooterName string, damage int32) (remainedHealth int32, err error) {
 	defer func() {
 		_ = mw.logger.Log("method", "CommitShooting",
 			"shooterName", shooterName,
 			"damage", damage,
+			"remainedHealth", remainedHealth,
 			"err", err)
 	}()
 	return mw.next.CommitShooting(shooterName, damage)
