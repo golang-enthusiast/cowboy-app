@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "cowboy-app.fullname" . }}-cron
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "cowboy-app.labels" . | indent 4 }}
+spec: 
+  jobTemplate: 
+    spec: 
+      template: 
+        spec: 
+          initContainers:
+            - name: init-cron
+              image: busybox
+              command: ['sh', '-c', "until nc -w 2 {{ .Release.Name }}-{{ index .Values.localstack.host }} {{ .Values.localstack.service.edgeService.targetPort }}; do echo Waiting for {{ .Release.Name }}-{{ index .Values.localstack.host }}; sleep 2; done;"]        
+          containers: 
+            - name: {{ .Chart.Name }}
+              image: {{ include "cowboy-app.cron-image" . }}
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              env:
+                - name: AWS_MOCK_SERVER_ADDRESS
+                  value: "{{ .Values.localstack.protocol }}{{ .Release.Name }}-{{ index .Values.localstack.host }}:{{ index .Values.localstack.service.edgeService.targetPort }}"  
+                - name: AWS_REGION
+                  value: {{ .Values.aws.region | quote }}    
+                - name: AWS_ACCESS_KEY_ID
+                  value: {{ .Values.aws.key.access | quote }}     
+                - name: AWS_SECRET_ACCESS_KEY
+                  value: {{ .Values.aws.key.secret | quote }}
+                - name: COWBOY_TABLE_NAME
+                  value: {{ .Values.cowboy.tableName | quote }}            
+          restartPolicy: OnFailure
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: "Forbid"

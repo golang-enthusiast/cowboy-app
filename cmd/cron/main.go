@@ -57,6 +57,7 @@ func main() {
 	if err != nil {
 		_ = logger.Log("Failed to execute list of cowboys", err.Error())
 	}
+	_ = logger.Log("Cowboys encounter started ...")
 	for _, cowboy := range cowboys {
 		_, err = queueService.SendMessage(context.Background(), cowboy.Name, &domain.PrepareGunsMessage{})
 		if err != nil {

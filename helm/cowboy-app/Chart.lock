@@ -1,0 +1,6 @@
+dependencies:
+- name: localstack
+  repository: https://localstack.github.io/helm-charts
+  version: 0.3.7
+digest: sha256:cb0a6567a308f9892b82c0427b75c89823c10d01d41e96d4745fe6a70b08a9f7
+generated: "2022-04-04T10:46:59.696377355+06:00"

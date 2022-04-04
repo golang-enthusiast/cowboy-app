@@ -1,0 +1,27 @@
+apiVersion: demo.ai.cast/v1
+kind: Cowboy
+metadata:
+  name: {{ include "cowboy-app.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "cowboy-app.labels" . | nindent 4 }}
+spec:
+  image: {{ include "cowboy-app.image" . }}
+  imagePullPolicy: {{ .Values.image.pullPolicy }}
+  envVars:
+    - name: AWS_MOCK_SERVER_ADDRESS
+      value: "{{ .Values.localstack.protocol }}{{ .Release.Name }}-{{ index .Values.localstack.host }}:{{ index .Values.localstack.service.edgeService.targetPort }}"  
+    - name: AWS_REGION
+      value: {{ .Values.aws.region | quote }}    
+    - name: AWS_ACCESS_KEY_ID
+      value: {{ .Values.aws.key.access | quote }}     
+    - name: AWS_SECRET_ACCESS_KEY
+      value: {{ .Values.aws.key.secret | quote }} 
+    - name: COWBOY_TABLE_NAME
+      value: {{ .Values.cowboy.tableName | quote }}    
+  cowboys:
+    - John
+    - Bill
+    - Sam
+    - Peter
+    - Philip
